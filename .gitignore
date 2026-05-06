@@ -1,0 +1,25 @@
+# Java
+*.class
+*.log
+*.jar
+*.war
+target/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Banco de dados (não subir dados reais)
+*.db
+*.sqlite
+
+# Ambiente virtual
+.env
+venv/
+node_modules/
