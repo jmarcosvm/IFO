@@ -1,9 +1,14 @@
 /* ============================================
    IFO - JavaScript Principal
-   Dados Mockados (serão substituídos pela API na Sprint 2)
+   Dados de congelados (serão substituídos pela API na Sprint 3)
    ============================================ */
 
-// DADOS MOCKADOS - BASEADO NO SQL ifo_schema_001.sql
+// ============================================
+// DADOS DE TESTE - Simulam o banco de dados
+// Baseados no SQL ifo_schema_001.sql
+// ============================================
+
+// Dados do usuário logado (Douglas)
 const usuario = {
     id: 1,
     nome: "Douglas Teste",
@@ -11,6 +16,7 @@ const usuario = {
     rendaMensal: 1500.00
 };
 
+// Lista de transações (receitas e despesas)
 const transacoes = [
     { id: 1, descricao: "Mesada dos pais", valor: 1500.00, tipo: "RECEITA", data: "2025-04-01", paga: true },
     { id: 2, descricao: "Freelance de fim de semana", valor: 500.00, tipo: "RECEITA", data: "2025-04-10", paga: true },
@@ -22,6 +28,7 @@ const transacoes = [
     { id: 8, descricao: "Guardar para console", valor: 300.00, tipo: "DESPESA", data: "2025-04-20", paga: true }
 ];
 
+// Categorias de receitas e despesas
 const categorias = [
     { id: 1, nome: "Mesada", tipo: "RECEITA" },
     { id: 2, nome: "Freelance", tipo: "RECEITA" },
@@ -31,66 +38,69 @@ const categorias = [
     { id: 6, nome: "Investimento", tipo: "DESPESA" }
 ];
 
+// Metas financeiras do usuário
 const metas = [
     { id: 1, titulo: "Comprar Console Novo", valorObjetivo: 3000.00, valorAtual: 300.00, prazo: "2025-12-31" }
 ];
 
+// Orçamentos mensais por categoria
 const orcamentos = [
     { id: 1, categoria: "Alimentação", limite: 750.00, gasto: 300.00 },
     { id: 2, categoria: "Lazer", limite: 450.00, gasto: 300.00 },
     { id: 3, categoria: "Investimento", limite: 300.00, gasto: 300.00 }
 ];
 
+// Simulações de investimento
 const investimentos = [
     { id: 1, valorMensal: 300.00, taxaJuros: 1.00, tempoMeses: 12, tipoJuros: "COMPOSTO", montanteFinal: 3804.75 }
 ];
 
 /* ============================================
-   FUNÇÕES GERAIS
+   FUNÇÕES GERAIS (UTILITÁRIOS)
    ============================================ */
 
-// Formatador de moeda
+// Formata número como moeda brasileira (R$)
 function formatarMoeda(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-// Formatador de data
+// Formata data ISO (AAAA-MM-DD) para formato brasileiro (DD/MM/AAAA)
 function formatarData(dataISO) {
     if (!dataISO) return "-";
     const [ano, mes, dia] = dataISO.split("-");
     return `${dia}/${mes}/${ano}`;
 }
 
-// Calcular saldo total
+// Calcula saldo total: receitas menos despesas
 function calcularSaldo() {
     const receitas = transacoes
-        .filter(t => t.tipo === "RECEITA")
-        .reduce((sum, t) => sum + t.valor, 0);
+        .filter(t => t.tipo === "RECEITA")  // Filtra apenas receitas
+        .reduce((sum, t) => sum + t.valor, 0);  // Soma todas
     
     const despesas = transacoes
-        .filter(t => t.tipo === "DESPESA")
-        .reduce((sum, t) => sum + t.valor, 0);
+        .filter(t => t.tipo === "DESPESA")  // Filtra apenas despesas
+        .reduce((sum, t) => sum + t.valor, 0);  // Soma todas
     
-    return receitas - despesas;
+    return receitas - despesas;  // Retorna diferença
 }
 
-// Calcular total por tipo
+// Calcula total de receitas OU despesas (depende do parâmetro)
 function calcularTotalPorTipo(tipo) {
     return transacoes
-        .filter(t => t.tipo === tipo)
-        .reduce((sum, t) => sum + t.valor, 0);
+        .filter(t => t.tipo === tipo)  // Filtra pelo tipo (RECEITA ou DESPESA)
+        .reduce((sum, t) => sum + t.valor, 0);  // Soma valores
 }
 
-// Calcular progresso da meta
+// Calcula percentual de progresso da meta
 function calcularProgresso(meta) {
     return ((meta.valorAtual / meta.valorObjetivo) * 100).toFixed(1);
 }
 
 /* ============================================
-   FUNÇÕES DE RENDERIZAÇÃO
+   FUNÇÕES DE RENDERIZAÇÃO (ATUALIZAM A TELA)
    ============================================ */
 
-// Carregar saldo no dashboard
+// Atualiza o saldo mostrado no dashboard
 function carregarSaldo() {
     const saldoElement = document.querySelector("#saldo");
     if (saldoElement) {
@@ -98,7 +108,7 @@ function carregarSaldo() {
     }
 }
 
-// Carregar resumo de receitas e despesas
+// Atualiza totais de receitas e despesas no dashboard
 function carregarResumo() {
     const receitasElement = document.querySelector("#total-receitas");
     const despesasElement = document.querySelector("#total-despesas");
@@ -112,11 +122,12 @@ function carregarResumo() {
     }
 }
 
-// Carregar transações na tabela
+// Preenche a tabela de transações na página
 function carregarTransacoes() {
     const tbody = document.querySelector("#tabela-transacoes");
-    if (!tbody) return;
+    if (!tbody) return;  // Se não existir tabela, sai da função
 
+    // Para cada transação, cria uma linha na tabela
     tbody.innerHTML = transacoes.map(t => `
         <tr>
             <td>${formatarData(t.data)}</td>
@@ -134,16 +145,17 @@ function carregarTransacoes() {
                 <button class="btn btn-sm btn-danger">Excluir</button>
             </td>
         </tr>
-    `).join("");
+    `).join("");  // Junta todas as linhas em uma string
 }
 
-// Carregar metas
+// Renderiza cards de metas financeiras com barra de progresso
 function carregarMetas() {
     const container = document.querySelector("#lista-metas");
     if (!container) return;
 
     container.innerHTML = metas.map(meta => {
         const progresso = calcularProgresso(meta);
+        // Define cor da barra: verde (100%), amarela (50%+), vermelha (<50%)
         const classeProgresso = progresso >= 100 ? 'progress-green' : progresso >= 50 ? 'progress-yellow' : 'progress-red';
         
         return `
@@ -158,19 +170,20 @@ function carregarMetas() {
                 </div>
                 <p class="text-center mt-2"><strong>${progresso}%</strong> concluído</p>
                 <p class="text-center text-muted">Prazo: ${formatarData(meta.prazo)}</p>
-                <button class="btn btn-primary btn-sm mt-2">Adicionar Valor</button>
+                <button class="btn btn-primary btn-sm mt-2" onclick="alert('Funcionalidade será implementada com backend na Sprint 3!')">Adicionar Valor</button>
             </div>
         `;
     }).join("");
 }
 
-// Carregar orçamentos
+// Renderiza cards de orçamentos com alerta se próximo do limite
 function carregarOrcamentos() {
     const container = document.querySelector("#lista-orcamentos");
     if (!container) return;
 
     container.innerHTML = orcamentos.map(orc => {
         const percentual = ((orc.gasto / orc.limite) * 100).toFixed(1);
+        // Cor da barra: vermelho (100%+), amarelo (70%+), verde (<70%)
         const classeProgresso = percentual >= 100 ? 'progress-red' : percentual >= 70 ? 'progress-yellow' : 'progress-green';
         
         return `
@@ -184,20 +197,20 @@ function carregarOrcamentos() {
                     <div class="progress-bar ${classeProgresso}" style="width: ${percentual}%"></div>
                 </div>
                 <p class="text-center mt-2"><strong>${percentual}%</strong> utilizado</p>
-                ${percentual >= 90 ? '<div class="alert alert-warning mt-2">Próximo do limite!</div>' : ''}
+                ${percentual >= 90 ? '<div class="alert alert-warning mt-2">⚠️ Próximo do limite!</div>' : ''}
             </div>
         `;
     }).join("");
 }
 
-// Carregar simulador de investimento
+// Exibe resultados da simulação de investimento
 function carregarInvestimentos() {
     const container = document.querySelector("#resultado-investimento");
     if (!container || investimentos.length === 0) return;
 
     const inv = investimentos[0];
-    const totalInvestido = inv.valorMensal * inv.tempoMeses;
-    const rendimento = inv.montanteFinal - totalInvestido;
+    const totalInvestido = inv.valorMensal * inv.tempoMeses;  // Soma de todos os aportes
+    const rendimento = inv.montanteFinal - totalInvestido;  // Quanto rendeu
 
     container.innerHTML = `
         <div class="grid-2">
@@ -219,7 +232,7 @@ function carregarInvestimentos() {
     `;
 }
 
-// Carregar nome do usuário no header
+// Atualiza nome do usuário no header/cabeçalho
 function carregarUsuario() {
     const usuarioElement = document.querySelector("#nome-usuario");
     if (usuarioElement) {
@@ -228,10 +241,12 @@ function carregarUsuario() {
 }
 
 /* ============================================
-   INICIALIZAÇÃO
+   INICIALIZAÇÃO (EXECUTA AO CARREGAR PÁGINA)
    ============================================ */
 
+// Quando o HTML estiver completamente carregado
 document.addEventListener("DOMContentLoaded", () => {
+    // Chama todas as funções para preencher a tela
     carregarUsuario();
     carregarSaldo();
     carregarResumo();
@@ -240,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarOrcamentos();
     carregarInvestimentos();
 
+    // Mensagens no console para debug
     console.log("IFO Frontend carregado com sucesso!");
-    console.log("Dados para tese! - Backend será integrado na Sprint 03!");
+    console.log("Dados mockados - Backend será integrado na Sprint 3!");
 });
